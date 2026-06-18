@@ -1,13 +1,28 @@
 import asyncio
 import json
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse
 import paramiko
+import os
 
 app = FastAPI()
 
+# 1. New Feature: Serve your index.html static assets locally
+# This dynamically maps your public/ folder so Uvicorn can find it
+public_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "public")
+if os.path.exists(public_dir):
+    app.mount("/public", StaticFiles(directory=public_dir), name="public")
+
+# Redirect root domain "/" straight to your login page template automatically
+@app.get("/")
+async def root_redirect():
+    return RedirectResponse(url="/public/index.html")
+
+
+# 2. Your Existing WebSocket Endpoint
 @app.websocket("/api/ssh-stream")
 async def ssh_terminal_handler(websocket: WebSocket):
-    # Accept the incoming serverless WebSocket handshake
     await websocket.accept()
     
     ssh = paramiko.SSHClient()
@@ -15,7 +30,6 @@ async def ssh_terminal_handler(websocket: WebSocket):
     ssh_channel = None
 
     try:
-        # 1. Receive the initial credential initialization configuration packet
         init_message = await websocket.receive_text()
         config = json.loads(init_message)
         
@@ -24,22 +38,18 @@ async def ssh_terminal_handler(websocket: WebSocket):
         password = config.get('password')
         port = int(config.get('port', 22))
 
-        await websocket.send_text(f"Serverless connection routing to {hostname}:{port}...\r\n")
-
-        # 2. Establish the SSH tunnel from Vercel's serverless edge node to the target machine
+        await websocket.send_text(f"Connecting to remote host {hostname}:{port} via SSH...\r\n")
         ssh.connect(hostname=hostname, username=username, password=password, port=port, timeout=10)
         
-        # 3. Create interactive pseudo-terminal window attributes
         ssh_channel = ssh.invoke_shell(term='xterm', width=100, height=30)
         ssh_channel.setblocking(False)
-        await websocket.send_text("✔ Secure Session Engaged!\r\n\r\n")
+        await websocket.send_text("✔ Connection Established! Starting session...\r\n\r\n")
 
     except Exception as e:
-        await websocket.send_text(f"\r\n[Serverless Connection Failed: {str(e)}]\r\n")
+        await websocket.send_text(f"\r\n[SSH Connection Failed: {str(e)}]\r\n")
         await websocket.close()
         return
 
-    # Background pipeline stream reader task
     async def read_from_ssh():
         try:
             while ssh_channel and not ssh_channel.exit_status_ready():
@@ -53,13 +63,12 @@ async def ssh_terminal_handler(websocket: WebSocket):
     read_task = asyncio.create_task(read_from_ssh())
 
     try:
-        # Listen for keystrokes sent from Vercel's client-side user view
         while True:
             message = await websocket.receive_text()
             if ssh_channel and ssh_channel.send_ready():
                 ssh_channel.send(message.encode('utf-8'))
     except WebSocketDisconnect:
-        print("User disconnected from serverless instance.")
+        print("User cleanly disconnected from active session loop.")
     finally:
         read_task.cancel()
         if ssh_channel:
