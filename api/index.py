@@ -1,26 +1,13 @@
 import asyncio
 import json
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import RedirectResponse
 import paramiko
-import os
 
 app = FastAPI()
 
-# 1. New Feature: Serve your index.html static assets locally
-# This dynamically maps your public/ folder so Uvicorn can find it
-public_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "public")
-if os.path.exists(public_dir):
-    app.mount("/public", StaticFiles(directory=public_dir), name="public")
+# We removed app.mount and the "/" redirect completely.
+# Vercel's edge network will handle serving the HTML page instead.
 
-# Redirect root domain "/" straight to your login page template automatically
-@app.get("/")
-async def root_redirect():
-    return RedirectResponse(url="/public/index.html")
-
-
-# 2. Your Existing WebSocket Endpoint
 @app.websocket("/api/ssh-stream")
 async def ssh_terminal_handler(websocket: WebSocket):
     await websocket.accept()
