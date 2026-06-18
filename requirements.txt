@@ -1,4 +1,0 @@
-fastapi
-paramiko
-websockets
-uvicorn
