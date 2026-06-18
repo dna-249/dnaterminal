@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DNA Serverless Terminal</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.min.css" />
+    <style>
+        body { background: #121212; color: #e0e0e0; font-family: sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: 50px auto; background: #1e1e1e; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        h2 { margin-top: 0; color: #fff; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-size: 14px; color: #aaa; }
+        input { width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid #444; border-radius: 4px; color: #fff; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #3f51b5; border: none; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        #terminal-container { display: none; width: 100%; height: 95vh; background: #000; padding: 10px; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+    <div id="login-panel" class="container">
+        <h2>DNA Serverless Terminal</h2>
+        <div class="form-group"><label>Remote Host / IP Address</label><input type="text" id="hostname"></div>
+        <div class="form-group" style="display: flex; gap: 10px;"><div style="flex: 3;"><label>Username</label><input type="text" id="username"></div><div style="flex: 1;"><label>Port</label><input type="number" id="port" value="22"></div></div>
+        <div class="form-group"><label>Password</label><input type="password" id="password"></div>
+        <button onclick="connectToSSH()">Establish Secure Session</button>
+    </div>
+    <div id="terminal-container"><div id="terminal"></div></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+    <script>
+        let socket;
+        function connectToSSH() {
+            const hostname = document.getElementById('hostname').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const port = document.getElementById('port').value;
+
+            if(!hostname || !username) { return alert("Host and Username fields are mandatory."); }
+
+            document.getElementById('login-panel').style.display = 'none';
+            document.getElementById('terminal-container').style.display = 'block';
+
+            const term = new Terminal({ cursorBlink: true, theme: { background: '#000000' }, fontSize: 15 });
+            term.open(document.getElementById('terminal'));
+
+            // Point dynamically to our Vercel serverless application location routing
+            const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+            const wsUrl = protocol + window.location.host + '/api/ssh-stream';
+            socket = new WebSocket(wsUrl);
+
+            socket.onopen = () => socket.send(JSON.stringify({ hostname, username, password, port }));
+            socket.onmessage = (e) => term.write(e.data);
+            term.onData(data => { if (socket.readyState === 1) socket.send(data); });
+            socket.onclose = () => term.writeln('\r\n\r\n[Session Disconnected from Serverless Tunnel.]');
+        }
+    </script>
+</body>
+</html>
