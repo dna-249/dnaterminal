@@ -1,26 +1,17 @@
 from pymongo import MongoClient
 import os
 
-# Use a connection string from environment variables
-# Set this in Vercel: Settings > Environment Variables > MONGO_URI
-MONGO_URI = os.getenv("MONGO_URI")
+# Use environment variables for security! 
+# Never hardcode credentials in your script.
+MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://danamonuraa:bkJ1MVARzko9ldt9@dnaapi.hjo9y.mongodb.net/product?retryWrites=true&w=majority&appName=dnaApi")
+client = MongoClient(MONGO_URI)
+db = client["dnaterminal_db"]
 
-# Lazy initialization: Connect only when needed
-_client = None
+# Collections
+users_collection = db["users"]
 
-def get_db():
-    global _client
-    if _client is None:
-        _client = MongoClient(MONGO_URI)
-    return _client["dnaterminal_db"]
-
-def get_users_collection():
-    db = get_db()
-    return db["users"]
-
-# Define operations using the collection getter
 def create_user(username, hashed_password, role, status):
-    return get_users_collection().insert_one({
+    return users_collection.insert_one({
         "username": username, 
         "password": hashed_password,
         "role": role,
@@ -28,7 +19,9 @@ def create_user(username, hashed_password, role, status):
     })
 
 def get_user(username):
-    return get_users_collection().find_one({"username": username})
+    return users_collection.find_one({"username": username})
+# Add this to api/db.py
+def init_db():
+    users_collection.create_index("username", unique=True)
 
-# Note: Do not run create_index() at the module level.
-# Call this once in your app lifespan if needed, or index via MongoDB Atlas.
+# Run this once during app startup
