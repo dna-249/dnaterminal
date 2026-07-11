@@ -17,7 +17,7 @@
 </head>
 <body>
     <div id="login-panel" class="container">
-        <h2>DNA Serverless Terminal</h2>
+        <h2 href="admin.html">DNA Serverless Terminal</h2>
         <div class="form-group"><label>Remote Host / IP Address</label><input type="text" id="hostname"></div>
         <div class="form-group" style="display: flex; gap: 10px;"><div style="flex: 3;"><label>Username</label><input type="text" id="username"></div><div style="flex: 1;"><label>Port</label><input type="number" id="port" value="22"></div></div>
         <div class="form-group"><label>Password</label><input type="password" id="password"></div>
@@ -26,32 +26,44 @@
     <div id="terminal-container"><div id="terminal"></div></div>
 
     <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
-    <script>
-        let socket;
-        function connectToSSH() {
-            const hostname = document.getElementById('hostname').value;
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const port = document.getElementById('port').value;
+  <script>
+    // 1. On page load, populate fields if data exists in localStorage
+    window.onload = () => {
+        document.getElementById('hostname').value = localStorage.getItem('dna_hostname') || '';
+        document.getElementById('username').value = localStorage.getItem('dna_username') || '';
+        document.getElementById('port').value = localStorage.getItem('dna_port') || '22';
+    };
 
-            if(!hostname || !username) { return alert("Host and Username fields are mandatory."); }
+    let socket;
+    function connectToSSH() {
+        const hostname = document.getElementById('hostname').value;
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const port = document.getElementById('port').value;
+        
+        if(!hostname || !username) { return alert("Host and Username fields are mandatory."); }
 
-            document.getElementById('login-panel').style.display = 'none';
-            document.getElementById('terminal-container').style.display = 'block';
+        // 2. Save values to localStorage before connecting
+        localStorage.setItem('dna_hostname', hostname);
+        localStorage.setItem('dna_username', username);
+        localStorage.setItem('dna_port', port);
+        // Note: We do NOT store 'password' in localStorage for security reasons.
 
-            const term = new Terminal({ cursorBlink: true, theme: { background: '#000000' }, fontSize: 15 });
-            term.open(document.getElementById('terminal'));
+        document.getElementById('login-panel').style.display = 'none';
+        document.getElementById('terminal-container').style.display = 'block';
 
-            // Point dynamically to our Vercel serverless application location routing
-            const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-            const wsUrl = protocol + window.location.host + '/api/ssh-stream';
-            socket = new WebSocket(wsUrl);
+        const term = new Terminal({ cursorBlink: true, theme: { background: '#000000' }, fontSize: 15 });
+        term.open(document.getElementById('terminal'));
 
-            socket.onopen = () => socket.send(JSON.stringify({ hostname, username, password, port }));
-            socket.onmessage = (e) => term.write(e.data);
-            term.onData(data => { if (socket.readyState === 1) socket.send(data); });
-            socket.onclose = () => term.writeln('\r\n\r\n[Session Disconnected from Serverless Tunnel.]');
-        }
-    </script>
+        const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const wsUrl = protocol + window.location.host + '/api/ssh-stream';
+        socket = new WebSocket(wsUrl);
+
+        socket.onopen = () => socket.send(JSON.stringify({ hostname, username, password, port }));
+        socket.onmessage = (e) => term.write(e.data);
+        term.onData(data => { if (socket.readyState === 1) socket.send(data); });
+        socket.onclose = () => term.writeln('\r\n\r\n[Session Disconnected from Serverless Tunnel.]');
+    }
+</script>
 </body>
 </html>

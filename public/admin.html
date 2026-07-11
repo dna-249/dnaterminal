@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNA Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-zinc-950 text-zinc-200 flex h-screen overflow-hidden">
+
+    <aside class="w-64 border-r border-zinc-800 p-6 hidden md:flex flex-col">
+        <div class="text-xl font-bold mb-10 text-indigo-500"><a href="admin.html" >DNA Admin</a></div>
+        <nav class="space-y-4 flex-grow">
+            <a href="#" class="block text-white font-semibold">Dashboard</a>
+            <a href="#" class="block text-zinc-400 hover:text-white">Active Sessions</a>
+            <a href="#" class="block text-zinc-400 hover:text-white">User Management</a>
+        </nav>
+        <a href="/logout" class="text-zinc-500 hover:text-red-400 text-sm">Sign Out</a>
+    </aside>
+
+    <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+        <header class="mb-10">
+            <h1 class="text-3xl font-bold">User Access Control</h1>
+            <p class="text-zinc-500">Manage user registrations and monitor active sessions.</p>
+        </header>
+
+        <section class="bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden">
+            <div class="flex border-b border-zinc-800">
+                <button class="p-4 border-b-2 border-indigo-500 text-indigo-400 font-medium">All Users</button>
+            </div>
+            
+            <table class="w-full text-left">
+                <thead class="bg-zinc-950 text-zinc-400 text-sm uppercase">
+                    <tr>
+                        <th class="p-4">Email</th>
+                        <th class="p-4">Status</th>
+                        <th class="p-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-zinc-800" id="user-table-body">
+                    <tr class="animate-pulse">
+                        <td class="p-4 bg-zinc-800 h-12"></td>
+                        <td class="p-4 bg-zinc-800 h-12"></td>
+                        <td class="p-4 bg-zinc-800 h-12"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script>
+    async function fetchUsers() {
+        try {
+            const response = await fetch('/api/admin/users', { 
+                headers: { 'Authorization': 'Bearer ' + localStorage.token } 
+            });
+            const users = await response.json();
+            const tbody = document.getElementById('user-table-body');
+            
+            // Clear the loading skeleton
+            tbody.innerHTML = '';
+            console.log("Fetched users:", users); // Log the fetched users for debugging
+            // Map each user to a table row
+            users.forEach(user => {
+                const isPending = user.status === 'pending';
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td class="p-4">${user.username}</td>
+                    <td class="p-4">
+                        <span class="px-2 py-1 rounded text-xs ${isPending ? 'bg-amber-900/30 text-amber-500' : 'bg-emerald-900/30 text-emerald-500'}">
+                            ${user.status?.toUpperCase()}
+                        </span>
+                    </td>
+                    <td class="p-4 text-right">
+                        ${isPending ? `
+                            <button onclick="approveUser('${user._id}')" class="text-emerald-400 hover:text-white mr-4 font-bold">Approve</button>
+                            <button class="text-red-400 hover:text-white">Deny</button>
+                        ` : '<span class="text-zinc-600">Active</span>'}
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        } catch (error) {
+            console.error("Failed to fetch users:", error);
+        }
+    }
+
+    async function approveUser(userId) {
+        await fetch(`/api/admin/approve/${userId}`, { 
+            method: 'POST', 
+            headers: { 'Authorization': 'Bearer ' + localStorage.token } 
+        });
+        fetchUsers(); // Refresh the list
+    }
+
+    fetchUsers();
+</script>
+</body>
+</html>

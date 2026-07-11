@@ -2,3 +2,5 @@ fastapi
 paramiko
 websockets
 uvicorn
+passlib[bcrypt]
+python-jose[cryptography]

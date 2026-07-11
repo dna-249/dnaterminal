@@ -1,0 +1,60 @@
+/* Base Styles */
+body {
+    background-color: #0f172a; /* Slate 900 */
+    color: #f1f5f9;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+/* Card Container */
+.card {
+    background: #1e293b; /* Slate 800 */
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    max-width: 400px;
+}
+
+/* Form Elements */
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    color: white;
+    box-sizing: border-box; /* Ensures padding doesn't break layout */
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    background: #6366f1; /* Indigo 500 */
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+button:hover {
+    background: #4f46e5;
+}
+
+/* Links */
+a {
+    text-decoration: none;
+    color: #818cf8;
+}
+
+a:hover {
+    text-decoration: underline;
+}

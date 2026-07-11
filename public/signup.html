@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign Up | DNA Systems</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="card">
+        <h2 style="margin-top: 0;">Create Account</h2>
+        <form id="signup-form">
+            <input type="text" id="username" placeholder="Choose Username" required>
+            <input type="password" id="password" placeholder="Choose Password" required>
+            <input type="password" id="confirm" placeholder="Confirm Password" required>
+            <button type="submit">Register Account</button>
+        </form>
+        <p style="text-align: center; font-size: 0.9rem; margin-top: 15px;">
+            Already have an account? <a href="login.html" style="color:#6366f1;">Sign In</a>
+        </p>
+    </div>
+
+    <script>
+        document.getElementById('signup-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('confirm').value;
+
+            if (password !== confirm) {
+                return alert("Passwords do not match!");
+            }
+
+            const response = await fetch('/api/auth/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            if (response.ok) {
+                alert("Account created successfully! Please sign in.");
+                window.location.href = 'login.html';
+            } else {
+                const error = await response.json();
+                alert(error|| "Signup failed.");
+            }
+        };
+    </script>
+</body>
+</html>
