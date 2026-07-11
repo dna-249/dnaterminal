@@ -20,5 +20,10 @@
       "src": "/(.*)",
       "dest": "public/home.html"
     }
+  ],
+  "rewrites": [
+    { "src": "/api/(.*)", "dest": "/api/index.py" },
+    { "src": "/(.*)", "dest": "/$1" }
   ]
+
 }
