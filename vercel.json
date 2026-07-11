@@ -17,6 +17,10 @@
     },
     {
       "src": "/(.*)",
+      "dest": "public/login.html"
+    },
+    {
+      "src": "/(.*)",
       "dest": "public/home.html"
     }
   ]
