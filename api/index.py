@@ -14,9 +14,6 @@ from api.admin import router as admin_router
 # from api.ssh import router as ssh_router
 from api.auth import get_current_user 
 from api.db import init_db
-import os
-from fastapi.staticfiles import StaticFiles
-
 
 app = FastAPI()
 
@@ -133,6 +130,4 @@ async def ssh_terminal_handler(websocket: WebSocket):
             ssh_channel.close()
         ssh.close()
 
-
-# Change your mount line to this:
-app.mount("/", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "..", "public"), html=True), name="public")
+app.mount("/", StaticFiles(directory="public", html=True), name="public")
