@@ -12,18 +12,6 @@
       "dest": "api/index.py"
     },
     {
-      "src": "/admin",
-      "dest": "public/admin.html"
-    },
-    {
-      "src": "/login",
-      "dest": "public/login.html"
-    },
-    {
-      "src": "/signup",
-      "dest": "public/signup.html"
-    },
-    {
       "src": "/(.*)",
       "dest": "public/$1"
     },
