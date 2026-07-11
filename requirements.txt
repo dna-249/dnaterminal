@@ -4,3 +4,5 @@ websockets
 uvicorn
 passlib[bcrypt]
 python-jose[cryptography]
+pymongo
+dnspython
