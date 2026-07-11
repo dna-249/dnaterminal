@@ -21,6 +21,10 @@
     },
     {
       "src": "/(.*)",
+      "dest": "public/signup.html"
+    },
+    {
+      "src": "/(.*)",
       "dest": "public/home.html"
     }
   ]
