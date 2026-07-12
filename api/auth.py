@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, Request, status
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from pydantic import BaseModel
 from jose import jwt, JWTError
@@ -57,13 +57,23 @@ async def signup(user: UserCreate):
 
 @router.post("/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = get_user(form_data.username)
-    if not user or not verify_password(form_data.password, user["password"]):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, 
-            detail="Incorrect username or password"
-        )
-    return {
-        "access_token": create_access_token({"sub": form_data.username}), 
-        "token_type": "bearer"
-    }
+    try:
+        # Move all logic inside the try block
+        user = get_user(form_data.username)
+        
+        if not user or not verify_password(form_data.password, user["password"]):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, 
+                detail="Incorrect username or password"
+            )
+            
+        return {
+            "access_token": create_access_token({"sub": form_data.username}), 
+            "token_type": "bearer"
+        }
+        
+    except Exception as e:
+        # This will now capture errors from get_user, verify_password, or the token creation
+        print(f"DEBUG ERROR: {str(e)}") 
+        raise HTTPException(status_code=500, detail=str(e))
+    
