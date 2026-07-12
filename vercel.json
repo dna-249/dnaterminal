@@ -1,17 +1,13 @@
 {
   "version": 2,
-  "rewrites": [
-    { 
-      "source": "/api/(.*)", 
-      "destination": "/api/index.py" 
-    },
-    { 
-      "source": "/", 
-      "destination": "/public/home.html" 
-    },
-    { 
-      "source": "/(.*)", 
-      "destination": "/public/$1" 
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/home.html",
+      "permanent": true
     }
+  ],
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index.py" }
   ]
 }
