@@ -10,6 +10,10 @@
       "use": "@vercel/static"
     }
   ],
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index.py" },
+    { "source": "/(.*)", "destination": "/$1" }
+  ],
   "routes": [
     {
       "src": "/api/(.*)",
@@ -20,10 +24,6 @@
       "src": "/(.*)",
       "dest": "public/home.html"
     }
-  ],
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index.py" },
-    { "source": "/(.*)", "destination": "/$1" }
   ]
 }
 
