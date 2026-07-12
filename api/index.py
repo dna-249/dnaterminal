@@ -130,4 +130,4 @@ async def ssh_terminal_handler(websocket: WebSocket):
             ssh_channel.close()
         ssh.close()
 
-app.mount("/", StaticFiles(directory="public", html=True), name="public")
+# app.mount("/", StaticFiles(directory="public", html=True), name="public")
