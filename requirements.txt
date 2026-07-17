@@ -7,3 +7,4 @@ python-jose[cryptography]
 pymongo
 dnspython
 python-multipart
+python-dotenv
